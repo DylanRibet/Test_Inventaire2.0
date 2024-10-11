@@ -46,7 +46,7 @@
                 <div id="scanner">
                     <video id="video" autoplay playsinline></video> <!-- Flux vidéo de la caméra -->
                 </div>
-                <!-- Bouton SCAN ajouté ici -->
+                <!-- Bouton pour démarrer le scan -->
                 <button id="scanButton" style="margin-top: 10px;">SCAN</button>
             </div>
         </section>
@@ -74,7 +74,6 @@
                 console.error("Erreur d'accès à la caméra : ", error);
             });
 
-        // Fonction pour télécharger les rapports
         function downloadSummary(type) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
