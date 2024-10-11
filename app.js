@@ -3,6 +3,7 @@
 let foundItems = []; // Tableau pour les items trouvés
 let notFoundItems = []; // Tableau pour les items non trouvés
 let itemsList = []; // Nouvelle variable pour garder trace de tous les items
+let currentStream; // Pour garder une référence du flux vidéo actuel
 
 // Lire le fichier CSV
 function processCSV() {
@@ -69,23 +70,41 @@ function manualCheck() {
     checkItem(manualCode);
 }
 
+// Obtenir les caméras disponibles
+async function getCameras() {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const videoTracks = stream.getVideoTracks();
+    return videoTracks;
+}
+
 // Démarrer le scan des codes-barres
-Quagga.init({
-    inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: document.querySelector('#scanner')
-    },
-    decoder: {
-        readers: ["code_128_reader", "ean_reader"] // types de codes-barres supportés
-    }
-}, function(err) {
-    if (err) {
-        console.error(err);
-        return;
-    }
-    Quagga.start();
-});
+async function startScanner(cameraLabel) {
+    const cameras = await getCameras();
+    const cameraIndex = cameraLabel === 'Front' ? 0 : 1; // 0 pour caméra avant, 1 pour caméra arrière
+    const constraints = {
+        video: {
+            facingMode: cameraIndex === 0 ? { exact: "user" } : { exact: "environment" }
+        }
+    };
+
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector('#scanner'),
+            constraints
+        },
+        decoder: {
+            readers: ["code_128_reader", "ean_reader"] // types de codes-barres supportés
+        }
+    }, function(err) {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        Quagga.start();
+    });
+}
 
 // À la détection d'un code-barres
 Quagga.onDetected(function(data) {
@@ -168,3 +187,30 @@ async function downloadSummary(status) {
 
 // Démarrer le traitement du fichier CSV lorsqu'il est sélectionné
 document.getElementById('csvFileInput').addEventListener('change', processCSV);
+
+// Demander à l'utilisateur quelle caméra utiliser
+function chooseCamera() {
+    const cameraSelector = document.createElement('select');
+    cameraSelector.innerHTML = `
+        <option value="Back">Caméra Arrière</option>
+        <option value="Front">Caméra Avant</option>
+    `;
+    cameraSelector.style.margin = '10px';
+
+    const startButton = document.createElement('button');
+    startButton.textContent = 'Démarrer le scan';
+    startButton.style.margin = '10px';
+
+    document.body.appendChild(cameraSelector);
+    document.body.appendChild(startButton);
+
+    startButton.addEventListener('click', () => {
+        const selectedCamera = cameraSelector.value;
+        startScanner(selectedCamera);
+        document.body.removeChild(cameraSelector);
+        document.body.removeChild(startButton);
+    });
+}
+
+// Lancer le choix de la caméra lors du chargement de la page
+window.onload = chooseCamera;
