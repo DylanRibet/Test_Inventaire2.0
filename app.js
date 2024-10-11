@@ -1,9 +1,8 @@
 let foundItems = []; // Tableau pour les items trouvés
 let notFoundItems = []; // Tableau pour les items non trouvés
 let itemsList = []; // Nouvelle variable pour garder trace de tous les items
-let currentStream; // Pour garder une référence du flux vidéo actuel
 let currentCamera = 'environment'; // Valeur par défaut pour la caméra arrière
-let scannerActive = false; // Variable pour suivre l'état du scanner
+let isScanning = false; // Indicateur pour savoir si le scan est en cours
 
 // Lire le fichier CSV
 function processCSV() {
@@ -90,49 +89,7 @@ function checkItem(scannedCode) {
     notFoundItems = itemsList.filter(item => !item.scanned);
 }
 
-// Démarrer le scan des codes-barres
-async function startScanner() {
-    const constraints = {
-        video: {
-            facingMode: currentCamera // Utiliser la valeur actuelle de currentCamera
-        }
-    };
-
-    Quagga.init({
-        inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: document.querySelector('#scanner'),
-            constraints
-        },
-        decoder: {
-            readers: ["code_128_reader", "ean_reader"] // types de codes-barres supportés
-        }
-    }, function(err) {
-        if (err) {
-            console.error(err);
-            return;
-        }
-        Quagga.start();
-        scannerActive = true; // Mettre à jour l'état du scanner
-    });
-}
-
-// Fonction pour arrêter le scanner
-function stopScanner() {
-    Quagga.stop();
-    scannerActive = false; // Mettre à jour l'état du scanner
-}
-
-// À la détection d'un code-barres
-Quagga.onDetected(function(data) {
-    if (scannerActive) { // Vérifier si le scanner est actif
-        const scannedCode = data.codeResult.code;
-        checkItem(scannedCode);
-    }
-});
-
-// Fonction pour télécharger les rapports
+// Téléchargement des rapports
 async function downloadSummary(status) {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('portrait', 'pt', 'letter'); // Format 8.5x11 pouces
@@ -182,37 +139,75 @@ async function downloadSummary(status) {
 // Démarrer le traitement du fichier CSV lorsqu'il est sélectionné
 document.getElementById('csvFileInput').addEventListener('change', processCSV);
 
-// Demander à l'utilisateur quelle caméra utiliser
-function chooseCamera() {
-    const scanButton = document.createElement('button');
-    scanButton.textContent = 'SCAN';
-    scanButton.style.margin = '10px';
-
-    const switchButton = document.createElement('button');
-    switchButton.textContent = 'Changer de caméra';
-    switchButton.style.margin = '10px';
-
-    document.body.appendChild(scanButton);
-    document.body.appendChild(switchButton);
-
-    scanButton.addEventListener('click', () => {
-        if (!scannerActive) {
-            startScanner(); // Démarrer le scanner
-            scanButton.textContent = 'ARRÊTER'; // Changer le texte du bouton
-        } else {
-            stopScanner(); // Arrêter le scanner
-            scanButton.textContent = 'SCAN'; // Remettre le texte original
+// Démarrer le scan des codes-barres
+async function startScanner() {
+    const constraints = {
+        video: {
+            facingMode: currentCamera // Utiliser la valeur actuelle de currentCamera
         }
-    });
+    };
 
-    switchButton.addEventListener('click', () => {
-        // Changer la caméra
-        currentCamera = currentCamera === 'environment' ? 'user' : 'environment'; // Alterner entre les caméras
-        alert(`Caméra changée : ${currentCamera === 'environment' ? 'Arrière' : 'Avant'}`);
-        stopScanner(); // Arrêter le scanner avant de changer la caméra
-        startScanner(); // Redémarrer le scanner
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector('#scanner'),
+            constraints
+        },
+        decoder: {
+            readers: ["code_128_reader", "ean_reader"] // types de codes-barres supportés
+        }
+    }, function(err) {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        Quagga.start();
+        isScanning = true; // Indiquer que le scan est en cours
     });
 }
 
+// Arrêter le scan des codes-barres
+function stopScanner() {
+    Quagga.stop();
+    isScanning = false; // Indiquer que le scan est arrêté
+}
+
+// À la détection d'un code-barres
+Quagga.onDetected(function(data) {
+    if (isScanning) { // Ne détecter que si le scan est en cours
+        const scannedCode = data.codeResult.code;
+        checkItem(scannedCode);
+    }
+});
+
+// Créer le bouton SCAN
+function createScanButton() {
+    const scanButton = document.createElement('button');
+    scanButton.textContent = 'SCAN';
+    scanButton.style.backgroundColor = 'blue';
+    scanButton.style.color = 'white';
+    scanButton.style.border = 'none';
+    scanButton.style.padding = '10px 20px';
+    scanButton.style.cursor = 'pointer';
+    scanButton.style.marginTop = '10px';
+
+    scanButton.addEventListener('mousedown', () => {
+        startScanner(); // Commencer à scanner quand le bouton est enfoncé
+    });
+
+    scanButton.addEventListener('mouseup', () => {
+        stopScanner(); // Arrêter le scan quand le bouton est relâché
+    });
+
+    return scanButton;
+}
+
 // Lancer le choix de la caméra lors du chargement de la page
-window.onload = chooseCamera;
+function setup() {
+    const reportsSection = document.getElementById('reportsSection');
+    const scanButton = createScanButton();
+    reportsSection.insertBefore(scanButton, reportsSection.firstChild); // Insérer le bouton juste au-dessus des rapports
+}
+
+window.onload = setup;
