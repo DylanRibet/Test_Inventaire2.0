@@ -1,13 +1,12 @@
 let foundItems = []; // Tableau pour les items trouvés
 let notFoundItems = []; // Tableau pour les items non trouvés
-let itemsList = []; // Nouvelle variable pour garder trace de tous les items
+let itemsList = []; // Liste de tous les items
 let isScanning = false; // Indicateur pour savoir si le scan est en cours
 
 // Lire le fichier CSV
 function processCSV() {
     const fileInput = document.getElementById('csvFileInput');
 
-    // Vérifier si un fichier a été sélectionné
     if (!fileInput.files.length) {
         alert("Veuillez sélectionner un fichier CSV.");
         return;
@@ -18,13 +17,8 @@ function processCSV() {
     reader.onload = function(e) {
         const text = e.target.result;
         const rows = text.split('\n').map(row => row.split(',')); // Séparer les lignes et les colonnes
-
-        // Prendre uniquement les lignes à partir de la 8ème (index 7)
-        const items = rows.slice(7);
+        const items = rows.slice(7); // Prendre les lignes à partir de la 8ème
         displayItems(items); // Afficher les items
-
-        // Démarrer le streaming de la webcam après le chargement des items
-        streamWebCamVideo(true); // Appel de la fonction avec la caméra frontale par défaut
     };
 
     reader.readAsText(fileInput.files[0]);
@@ -32,49 +26,46 @@ function processCSV() {
 
 // Afficher la liste des items dans un tableau
 function displayItems(items) {
-    const list = document.getElementById('itemList');
-    list.innerHTML = ''; // Réinitialiser la liste
+    const tbody = document.getElementById('itemList').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = ''; // Réinitialiser le tableau
     itemsList = []; // Réinitialiser la liste d'items
 
-    // Vérifier si le tableau est vide
     if (items.length === 0) {
-        list.innerHTML = '<tr><td colspan="5">Aucun item trouvé.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5">Aucun item trouvé.</td></tr>';
         return;
     }
 
     items.forEach(item => {
         const row = document.createElement('tr');
-        
-        // Créer les cellules pour chaque colonne
         row.innerHTML = `
-            <td>${item[0]}</td> <!-- Code-barres -->
-            <td>${item[1] || 'N/A'}</td> <!-- Colonne 2 avec valeur par défaut -->
-            <td>${item[11] || 'N/A'}</td> <!-- Colonne 12 avec valeur par défaut -->
-            <td>${item[3] || 'N/A'}</td> <!-- Colonne 4 avec valeur par défaut -->
-            <td>${item[2] || 'N/A'}</td> <!-- Colonne 3 avec valeur par défaut -->
+            <td>${item[0]}</td>
+            <td>${item[1] || 'N/A'}</td>
+            <td>${item[11] || 'N/A'}</td>
+            <td>${item[3] || 'N/A'}</td>
+            <td>${item[2] || 'N/A'}</td>
         `;
-        row.setAttribute('data-code', item[0]); // Le code-barres est dans la première colonne
-        list.appendChild(row);
+        row.setAttribute('data-code', item[0]);
+        tbody.appendChild(row);
 
-        // Ajoute l'item à la liste des items
+        // Ajouter l'item à la liste
         itemsList.push({
             code: item[0],
-            description: item[2] || 'N/A', // Valeur par défaut
-            scanned: false // Initialement non scanné
+            description: item[2] || 'N/A',
+            scanned: false // Non scanné par défaut
         });
     });
 }
 
 // Vérifie si le code scanné correspond à un item dans la liste
 function checkItem(scannedCode) {
-    const items = document.querySelectorAll('#itemList tr');
+    const items = document.querySelectorAll('#itemList tbody tr');
     let found = false;
 
     items.forEach(item => {
         if (item.getAttribute('data-code') === scannedCode) {
-            item.classList.add('scanned'); // Marquer l'item comme scanné
+            item.classList.add('scanned'); // Marquer comme scanné
             found = true;
-            // Met à jour la liste des items trouvés
+
             const itemDetails = itemsList.find(i => i.code === scannedCode);
             if (itemDetails) {
                 itemDetails.scanned = true;
@@ -87,65 +78,56 @@ function checkItem(scannedCode) {
         alert("Item non trouvé dans la liste.");
     }
 
-    // Met à jour la liste des items non trouvés
+    // Mettre à jour la liste des items non trouvés
     notFoundItems = itemsList.filter(item => !item.scanned);
 }
 
 // Téléchargement des rapports
 async function downloadSummary(status) {
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('portrait', 'pt', 'letter'); // Format 8.5x11 pouces
+    const pdf = new jsPDF('portrait', 'pt', 'letter');
 
-    // Titre du rapport
     pdf.setFontSize(16);
     pdf.text(`Rapport des items ${status === 'found' ? 'trouvés' : 'non trouvés'}`, 10, 20);
 
-    // En-têtes du tableau
     pdf.setFontSize(12);
-    const startY = 40; // Position Y de départ pour le tableau
-    const rowHeight = 15; // Hauteur de ligne
-    const columnWidth = [100, 200]; // Largeurs des colonnes
+    const startY = 40;
+    const rowHeight = 15;
+    const columnWidth = [100, 200];
 
-    // En-têtes
     pdf.text("Code-barres", 10, startY);
     pdf.text("Description", columnWidth[0] + 10, startY);
-    pdf.line(10, startY + 5, 10 + columnWidth[0] + columnWidth[1], startY + 5); // Ligne de séparation
+    pdf.line(10, startY + 5, 10 + columnWidth[0] + columnWidth[1], startY + 5);
 
-    // Remplir le tableau avec les données
-    let yPosition = startY + rowHeight; // Position Y pour les données
-    const margin = 10; // Marge
+    let yPosition = startY + rowHeight;
+    const margin = 10;
 
     const dataToDisplay = status === 'found' ? foundItems : notFoundItems;
 
-    dataToDisplay.forEach((item, index) => {
-        // Ajouter une nouvelle page si nécessaire
+    dataToDisplay.forEach((item) => {
         if (yPosition > pdf.internal.pageSize.height - margin) {
-            pdf.addPage(); // Ajouter une nouvelle page
-            // Redessiner les en-têtes sur chaque page
+            pdf.addPage();
             pdf.text("Code-barres", 10, 20);
             pdf.text("Description", columnWidth[0] + 10, 20);
             pdf.line(10, 25, 10 + columnWidth[0] + columnWidth[1], 25);
-            yPosition = 40; // Réinitialiser la position Y
+            yPosition = 40;
         }
 
-        // Afficher les données dans les colonnes
         pdf.text(item.code, 10, yPosition);
         pdf.text(item.description, columnWidth[0] + 10, yPosition);
-        yPosition += rowHeight; // Avancer à la ligne suivante
+        yPosition += rowHeight;
     });
 
-    // Télécharger le PDF
     pdf.save(`rapport_items_${status === 'found' ? 'trouvés' : 'non_trouvés'}.pdf`);
 }
 
-// Démarrer le traitement du fichier CSV lorsqu'il est sélectionné
+// Événements
 document.getElementById('csvFileInput').addEventListener('change', processCSV);
 
-// Démarrer le scan des codes-barres
 async function startScanner() {
     const constraints = {
         video: {
-            facingMode: { exact: "environment" } // Utiliser uniquement la caméra arrière
+            facingMode: { exact: "environment" }
         }
     };
 
@@ -157,72 +139,30 @@ async function startScanner() {
             constraints
         },
         decoder: {
-            readers: ["code_128_reader", "ean_reader"] // types de codes-barres supportés
+            readers: ["code_128_reader", "ean_reader"]
         }
-    }, function(err) {
+    }, (err) => {
         if (err) {
             console.error(err);
             return;
         }
         Quagga.start();
-        isScanning = true; // Indiquer que le scan est en cours
+        isScanning = true;
     });
 }
 
-// Arrêter le scan des codes-barres
 function stopScanner() {
     Quagga.stop();
-    isScanning = false; // Indiquer que le scan est arrêté
+    isScanning = false;
 }
 
-// À la détection d'un code-barres
-Quagga.onDetected(function(data) {
-    if (isScanning) { // Ne détecter que si le scan est en cours
+Quagga.onDetected((data) => {
+    if (isScanning) {
         const scannedCode = data.codeResult.code;
         checkItem(scannedCode);
     }
 });
 
-// Lier les événements au bouton SCAN
-document.getElementById('scanButton').addEventListener('mousedown', () => {
-    startScanner(); // Commencer à scanner quand le bouton est enfoncé
-});
-
-document.getElementById('scanButton').addEventListener('mouseup', () => {
-    stopScanner(); // Arrêter le scan quand le bouton est relâché
-});
-
-// Fonction pour activer le stream vidéo
-function streamWebCamVideo(isFrontCamera = true) {
-    const video = document.getElementById("stream");
-    const constraints = {
-        video: {
-            facingMode: isFrontCamera ? "user" : "environment",
-            zoom: true,
-        },
-    };
-
-    window.navigator.mediaDevices
-        .getUserMedia(constraints)
-        .then((stream) => {
-            video.srcObject = stream;
-            video.onloadedmetadata = (e) => {
-                isFrontCamera && video.classList.add("flip");
-                !isFrontCamera && video.classList.remove("flip");
-                video.play();
-            };
-            const [track] = stream.getVideoTracks();
-            const capabilities = track.getCapabilities();
-            const settings = track.getSettings();
-
-            const input = document.querySelector('input[type="range"]');
-
-            // Check whether zoom is supported or not.
-            if (!("zoom" in settings)) {
-                return Promise.reject("Zoom is not supported by " + track.label);
-            }
-
-            // Map zoom to a slider element.
-            input.min = capabilities.zoom.min;
-            input.max = capabilities.zoom.max;
-            input
+// Lier les événements aux boutons
+document.getElementById('scanButton').addEventListener('mousedown', startScanner);
+document.getElementById('scanButton').addEventListener('mouseup', stopScanner);

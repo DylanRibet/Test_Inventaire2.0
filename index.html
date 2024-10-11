@@ -16,10 +16,9 @@
         <!-- Importer la liste d'items via un fichier CSV -->
         <section>
             <h2>Importer la liste d'items (CSV)</h2>
-            <form action="/upload" method="POST" enctype="multipart/form-data">
+            <form id="uploadForm" enctype="multipart/form-data">
                 <label for="csvFileInput">Choisissez un fichier CSV :</label>
                 <input type="file" name="file" id="csvFileInput" accept=".csv" required>
-                <br><br>
                 <button type="submit">Charger et traiter la liste</button>
             </form>
         </section>
@@ -47,7 +46,7 @@
         <!-- Entrée manuelle du code-barres -->
         <section>
             <h3>Entrer un code-barres manuellement :</h3>
-            <input type="text" id="manualCodeInput" placeholder="Entrez le code-barres">
+            <input type="text" id="manualCodeInput" placeholder="Entrez le code-barres" required>
             <button onclick="manualCheck()">Valider le code-barres</button>
         </section>
 
@@ -59,6 +58,7 @@
         </section>
     </main>
 
+    <!-- Scripts nécessaires -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="quagga.min.js"></script>
     <script src="app.js"></script>
@@ -88,9 +88,9 @@
                 const y = startY + (index * 10); 
 
                 if (type === 'found') {
-                    doc.setTextColor(0, 128, 0); 
+                    doc.setTextColor(0, 128, 0); // Couleur verte pour les items trouvés
                 } else {
-                    doc.setTextColor(255, 0, 0);
+                    doc.setTextColor(255, 0, 0); // Couleur rouge pour les items non trouvés
                 }
 
                 doc.text(item.name, 10, y); 
