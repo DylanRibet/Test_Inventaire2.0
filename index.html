@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventaire avec Codes-Barres</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="quagga.min.js"></script>
-    <script src="app.js" defer></script> <!-- Ajout de defer pour charger l'app.js après le DOM -->
 </head>
 <body>
     <header>
@@ -19,29 +16,22 @@
         <!-- Importer la liste d'items via un fichier CSV -->
         <section>
             <h2>Importer la liste d'items (CSV)</h2>
-            <label for="csvFileInput">Choisissez un fichier CSV :</label>
-            <input type="file" name="file" id="csvFileInput" accept=".csv" required>
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <label for="csvFileInput">Choisissez un fichier CSV :</label>
+                <input type="file" name="file" id="csvFileInput" accept=".csv" required>
+                <br><br>
+                <button type="submit">Charger et traiter la liste</button>
+            </form>
         </section>
 
         <!-- Liste des items -->
         <section>
             <h2>Liste d'items</h2>
             <div id="itemContainer">
-                <table id="itemList">
-                    <thead>
-                        <tr>
-                            <th>Code-barres</th>
-                            <th>Description</th>
-                            <th>Colonne 12</th>
-                            <th>Colonne 4</th>
-                            <th>Colonne 3</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <ul id="itemList"></ul>
             </div>
         </section>
-
+        
         <!-- Entrée manuelle du code-barres -->
         <section>
             <h3>Entrer un code-barres manuellement :</h3>
@@ -56,16 +46,22 @@
                 <div id="scanner">
                     <video id="video" autoplay playsinline></video> <!-- Flux vidéo de la caméra -->
                 </div>
-                <div id="scannerContainer"></div> <!-- Container pour le scanner -->
+                <!-- Bouton SCAN ajouté ici -->
+                <button id="scanButton" style="margin-top: 10px;">SCAN</button>
             </div>
-            <div id="reportsSection">
-                <h3>Télécharger les rapports :</h3>
-                <button onclick="downloadSummary('found')">Télécharger les items trouvés (PDF)</button>
-                <button onclick="downloadSummary('not_found')">Télécharger les items non trouvés (PDF)</button>
-            </div>
+        </section>
+
+        <!-- Téléchargement des rapports -->
+        <section>
+            <h3>Télécharger les rapports :</h3>
+            <button onclick="downloadSummary('found')">Télécharger les items trouvés (PDF)</button>
+            <button onclick="downloadSummary('not_found')">Télécharger les items non trouvés (PDF)</button>
         </section>
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="quagga.min.js"></script>
+    <script src="app.js"></script>
     <script>
         // Initialisation du flux vidéo
         const video = document.getElementById('video');
@@ -77,6 +73,32 @@
             .catch(function(error) {
                 console.error("Erreur d'accès à la caméra : ", error);
             });
+
+        // Fonction pour télécharger les rapports
+        function downloadSummary(type) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            let title = type === 'found' ? 'Items trouvés' : 'Items non trouvés';
+            doc.text(title, 10, 10);
+
+            const items = type === 'found' ? foundItems : notFoundItems; 
+            const startY = 20; 
+
+            items.forEach((item, index) => {
+                const y = startY + (index * 10); 
+
+                if (type === 'found') {
+                    doc.setTextColor(0, 128, 0); 
+                } else {
+                    doc.setTextColor(255, 0, 0);
+                }
+
+                doc.text(item.name, 10, y); 
+            });
+
+            doc.save(`${title}.pdf`);
+        }
     </script>
 </body>
 </html>
