@@ -28,12 +28,11 @@ h2 {
 input[type="file"],
 input[type="text"],
 button {
-    background-color: blue;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    margin-top: 10px;
+    padding: 10px; /* Espacement intérieur */
+    margin: 5px; /* Espacement extérieur */
+    border: 1px solid #ccc; /* Bordure grise */
+    border-radius: 5px; /* Coins arrondis */
+    width: calc(100% - 22px); /* Largeur en tenant compte du padding et de la bordure */
 }
 
 button {
