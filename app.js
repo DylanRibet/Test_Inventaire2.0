@@ -189,7 +189,7 @@ document.getElementById('csvFileInput').addEventListener('change', processCSV);
 
 // Demander à l'utilisateur quelle caméra utiliser
 function chooseCamera() {
-const startButton = document.createElement('button');
+    const startButton = document.createElement('button');
     startButton.textContent = 'Démarrer le scan';
     startButton.style.margin = '10px';
 
@@ -197,14 +197,11 @@ const startButton = document.createElement('button');
     switchButton.textContent = 'Changer de caméra';
     switchButton.style.margin = '10px';
 
-    document.body.appendChild(cameraSelector);
     document.body.appendChild(startButton);
     document.body.appendChild(switchButton);
 
     startButton.addEventListener('click', () => {
         startScanner();
-        document.body.removeChild(cameraSelector);
-        document.body.removeChild(startButton);
         switchButton.style.display = 'inline'; // Afficher le bouton de changement de caméra
     });
 
