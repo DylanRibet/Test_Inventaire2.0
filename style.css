@@ -23,6 +23,12 @@ h1 {
 
 h2 {
     margin-top: 20px; /* Espacement au-dessus des titres h2 */
+    color: #0056b3; /* Couleur des sous-titres */
+}
+
+h3 {
+    margin-top: 15px; /* Espacement au-dessus des titres h3 */
+    color: #0056b3; /* Couleur des titres h3 */
 }
 
 input[type="file"],
@@ -45,6 +51,10 @@ button:hover {
     background-color: #003d80; /* Couleur de fond au survol */
 }
 
+#itemContainer {
+    width: 100%; /* Prend toute la largeur pour la liste d'items */
+}
+
 #itemList {
     margin-top: 20px; /* Espacement au-dessus de la liste des items */
     border-collapse: collapse; /* Fusionne les bordures des cellules */
@@ -61,7 +71,8 @@ button:hover {
     background-color: #f0f0f0; /* Couleur de fond pour les lignes paires */
 }
 
-#itemList th, #itemList td {
+#itemList th,
+#itemList td {
     border: 1px solid #ccc; /* Bordure grise pour les cellules */
     text-align: center; /* Centre le texte */
     padding: 8px; /* Espacement intérieur des cellules */
