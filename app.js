@@ -207,13 +207,6 @@ const startButton = document.createElement('button');
         document.body.removeChild(startButton);
         switchButton.style.display = 'inline'; // Afficher le bouton de changement de caméra
     });
-
-    switchButton.addEventListener('click', () => {
-        // Changer la caméra
-        currentCamera = currentCamera === 'environment' ? 'user' : 'environment'; // Alterner entre les caméras
-        alert(`Caméra changée : ${currentCamera === 'environment' ? 'Arrière' : 'Avant'}`);
-        startScanner(); // Redémarrer le scanner
-    });
 }
 
 // Lancer le choix de la caméra lors du chargement de la page
