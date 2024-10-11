@@ -187,19 +187,42 @@ async function downloadSummary(status) {
 // Démarrer le traitement du fichier CSV lorsqu'il est sélectionné
 document.getElementById('csvFileInput').addEventListener('change', processCSV);
 
-// Demander à l'utilisateur quelle caméra utiliser
+// Choisir la caméra
 function chooseCamera() {
-const startButton = document.createElement('button');
+    const cameraSelector = document.createElement('select');
+    cameraSelector.innerHTML = `
+        <option value="Back">Caméra Arrière</option>
+        <option value="Front">Caméra Avant</option>
+    `;
+    cameraSelector.style.margin = '10px';
+    cameraSelector.style.display = 'none'; // Cacher le sélecteur de caméra
+
+    const startButton = document.createElement('button');
     startButton.textContent = 'Démarrer le scan';
     startButton.style.margin = '10px';
+    startButton.style.backgroundColor = 'blue'; // Changer la couleur du bouton
+    startButton.style.color = 'white'; // Couleur du texte
+    startButton.style.border = 'none'; // Pas de bordure
+    startButton.style.padding = '10px 20px'; // Espacement interne
+    startButton.style.cursor = 'pointer'; // Curseur en forme de main
 
     const switchButton = document.createElement('button');
     switchButton.textContent = 'Changer de caméra';
     switchButton.style.margin = '10px';
+    switchButton.style.backgroundColor = 'blue'; // Changer la couleur du bouton
+    switchButton.style.color = 'white'; // Couleur du texte
+    switchButton.style.border = 'none'; // Pas de bordure
+    switchButton.style.padding = '10px 20px'; // Espacement interne
+    switchButton.style.cursor = 'pointer'; // Curseur en forme de main
 
-    document.body.appendChild(cameraSelector);
     document.body.appendChild(startButton);
     document.body.appendChild(switchButton);
+
+    startButton.addEventListener('click', () => {
+        startScanner();
+        document.body.removeChild(startButton);
+        switchButton.style.display = 'inline'; // Afficher le bouton de changement de caméra
+    });
 
     switchButton.addEventListener('click', () => {
         // Changer la caméra
@@ -208,6 +231,9 @@ const startButton = document.createElement('button');
         startScanner(); // Redémarrer le scanner
     });
 }
+
+// Lancer le choix de la caméra lors du chargement de la page
+window.onload = chooseCamera;
 
 // Lancer le choix de la caméra lors du chargement de la page
 window.onload = chooseCamera;
