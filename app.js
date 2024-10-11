@@ -189,14 +189,7 @@ document.getElementById('csvFileInput').addEventListener('change', processCSV);
 
 // Demander à l'utilisateur quelle caméra utiliser
 function chooseCamera() {
-    const cameraSelector = document.createElement('select');
-    cameraSelector.innerHTML = `
-        <option value="Back">Caméra Arrière</option>
-        <option value="Front">Caméra Avant</option>
-    `;
-    cameraSelector.style.margin = '10px';
-
-    const startButton = document.createElement('button');
+const startButton = document.createElement('button');
     startButton.textContent = 'Démarrer le scan';
     startButton.style.margin = '10px';
 
