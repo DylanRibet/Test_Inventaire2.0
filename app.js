@@ -22,6 +22,9 @@ function processCSV() {
         // Prendre uniquement les lignes à partir de la 8ème (index 7)
         const items = rows.slice(7);
         displayItems(items); // Afficher les items
+
+        // Démarrer le streaming de la webcam après le chargement des items
+        streamWebCamVideo(true); // Appel de la fonction avec la caméra frontale par défaut
     };
 
     reader.readAsText(fileInput.files[0]);
@@ -188,3 +191,38 @@ document.getElementById('scanButton').addEventListener('mousedown', () => {
 document.getElementById('scanButton').addEventListener('mouseup', () => {
     stopScanner(); // Arrêter le scan quand le bouton est relâché
 });
+
+// Fonction pour activer le stream vidéo
+function streamWebCamVideo(isFrontCamera = true) {
+    const video = document.getElementById("stream");
+    const constraints = {
+        video: {
+            facingMode: isFrontCamera ? "user" : "environment",
+            zoom: true,
+        },
+    };
+
+    window.navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then((stream) => {
+            video.srcObject = stream;
+            video.onloadedmetadata = (e) => {
+                isFrontCamera && video.classList.add("flip");
+                !isFrontCamera && video.classList.remove("flip");
+                video.play();
+            };
+            const [track] = stream.getVideoTracks();
+            const capabilities = track.getCapabilities();
+            const settings = track.getSettings();
+
+            const input = document.querySelector('input[type="range"]');
+
+            // Check whether zoom is supported or not.
+            if (!("zoom" in settings)) {
+                return Promise.reject("Zoom is not supported by " + track.label);
+            }
+
+            // Map zoom to a slider element.
+            input.min = capabilities.zoom.min;
+            input.max = capabilities.zoom.max;
+            input
