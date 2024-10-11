@@ -201,11 +201,11 @@ const startButton = document.createElement('button');
     document.body.appendChild(startButton);
     document.body.appendChild(switchButton);
 
-    startButton.addEventListener('click', () => {
-        startScanner();
-        document.body.removeChild(cameraSelector);
-        document.body.removeChild(startButton);
-        switchButton.style.display = 'inline'; // Afficher le bouton de changement de caméra
+    switchButton.addEventListener('click', () => {
+        // Changer la caméra
+        currentCamera = currentCamera === 'environment' ? 'user' : 'environment'; // Alterner entre les caméras
+        alert(`Caméra changée : ${currentCamera === 'environment' ? 'Arrière' : 'Avant'}`);
+        startScanner(); // Redémarrer le scanner
     });
 }
 
