@@ -204,16 +204,13 @@ function createScanButton() {
 
 // Lancer le choix de la caméra lors du chargement de la page
 function setup() {
-    const reportsSection = document.getElementById('reportsSection');
+    const reportsSection = document.querySelector('section:nth-of-type(3)'); // On récupère la section des rapports
 
     // Créer le bouton SCAN
     const scanButton = createScanButton();
 
     // Insérer le bouton juste au-dessus de la phrase "Télécharger les rapports"
-    const downloadReportsText = document.createElement('div');
-    downloadReportsText.textContent = "Télécharger les rapports";
     reportsSection.appendChild(scanButton);
-    reportsSection.appendChild(downloadReportsText);
 }
 
 window.onload = setup;
