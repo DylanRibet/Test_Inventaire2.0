@@ -16,9 +16,10 @@
         <!-- Importer la liste d'items via un fichier CSV -->
         <section>
             <h2>Importer la liste d'items (CSV)</h2>
-            <form id="uploadForm" enctype="multipart/form-data">
+            <form id="csvForm" enctype="multipart/form-data">
                 <label for="csvFileInput">Choisissez un fichier CSV :</label>
                 <input type="file" name="file" id="csvFileInput" accept=".csv" required>
+                <br><br>
                 <button type="submit">Charger et traiter la liste</button>
             </form>
         </section>
@@ -46,7 +47,7 @@
         <!-- Entrée manuelle du code-barres -->
         <section>
             <h3>Entrer un code-barres manuellement :</h3>
-            <input type="text" id="manualCodeInput" placeholder="Entrez le code-barres" required>
+            <input type="text" id="manualCodeInput" placeholder="Entrez le code-barres">
             <button onclick="manualCheck()">Valider le code-barres</button>
         </section>
 
@@ -58,7 +59,6 @@
         </section>
     </main>
 
-    <!-- Scripts nécessaires -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="quagga.min.js"></script>
     <script src="app.js"></script>
@@ -74,30 +74,13 @@
                 console.error("Erreur d'accès à la caméra : ", error);
             });
 
-        function downloadSummary(type) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+        // Gestionnaire d'événements pour le formulaire
+        document.getElementById('csvForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Empêche le rechargement de la page
+            processCSV(); // Appelle la fonction pour traiter le fichier CSV
+        });
 
-            let title = type === 'found' ? 'Items trouvés' : 'Items non trouvés';
-            doc.text(title, 10, 10);
-
-            const items = type === 'found' ? foundItems : notFoundItems; 
-            const startY = 20; 
-
-            items.forEach((item, index) => {
-                const y = startY + (index * 10); 
-
-                if (type === 'found') {
-                    doc.setTextColor(0, 128, 0); // Couleur verte pour les items trouvés
-                } else {
-                    doc.setTextColor(255, 0, 0); // Couleur rouge pour les items non trouvés
-                }
-
-                doc.text(item.name, 10, y); 
-            });
-
-            doc.save(`${title}.pdf`);
-        }
+        // ... le reste de votre script
     </script>
 </body>
 </html>
