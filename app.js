@@ -1,7 +1,6 @@
 let foundItems = []; // Tableau pour les items trouvés
 let notFoundItems = []; // Tableau pour les items non trouvés
 let itemsList = []; // Nouvelle variable pour garder trace de tous les items
-let currentCamera = 'environment'; // Valeur par défaut pour la caméra arrière
 let isScanning = false; // Indicateur pour savoir si le scan est en cours
 
 // Lire le fichier CSV
@@ -143,7 +142,7 @@ document.getElementById('csvFileInput').addEventListener('change', processCSV);
 async function startScanner() {
     const constraints = {
         video: {
-            facingMode: currentCamera // Utiliser la valeur actuelle de currentCamera
+            facingMode: 'environment' // Utiliser toujours la caméra arrière
         }
     };
 
