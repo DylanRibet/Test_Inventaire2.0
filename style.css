@@ -1,0 +1,104 @@
+* {
+    box-sizing: border-box; /* Assure que padding et border ne s'ajoutent pas à la largeur totale */
+    margin: 0; /* Réinitialise les marges */
+    padding: 0; /* Réinitialise le padding */
+}
+
+body {
+    font-family: Arial, sans-serif; /* Police de caractères */
+    background-color: #f4f4f4; /* Couleur de fond */
+    color: #333; /* Couleur du texte */
+    display: flex; /* Utilise flexbox pour l'alignement */
+    flex-direction: column; /* Aligne les enfants verticalement */
+    align-items: center; /* Centre horizontalement */
+    justify-content: flex-start; /* Commence en haut de la page */
+    min-height: 100vh; /* Prend toute la hauteur de la fenêtre */
+    padding: 20px; /* Espacement intérieur */
+}
+
+h1 {
+    text-align: center; /* Centre le titre */
+    color: #0056b3; /* Couleur du titre */
+}
+
+h2 {
+    margin-top: 20px; /* Espacement au-dessus des titres h2 */
+}
+
+input[type="file"],
+input[type="text"],
+button {
+    padding: 10px; /* Espacement intérieur */
+    margin: 5px; /* Espacement extérieur */
+    border: 1px solid #ccc; /* Bordure grise */
+    border-radius: 5px; /* Coins arrondis */
+    width: calc(100% - 22px); /* Largeur en tenant compte du padding et de la bordure */
+}
+
+button {
+    background-color: #0056b3; /* Couleur de fond du bouton */
+    color: white; /* Couleur du texte du bouton */
+    cursor: pointer; /* Curseur pointer */
+}
+
+button:hover {
+    background-color: #003d80; /* Couleur de fond au survol */
+}
+
+#itemList {
+    margin-top: 20px; /* Espacement au-dessus de la liste des items */
+    border-collapse: collapse; /* Fusionne les bordures des cellules */
+    width: 100%; /* Prend toute la largeur */
+    max-height: 300px; /* Hauteur maximum pour le défilement */
+    overflow-y: auto; /* Ajoute un défilement vertical */
+}
+
+#itemList tr {
+    background-color: #ffffff; /* Couleur de fond par défaut */
+}
+
+#itemList tr:nth-child(even) {
+    background-color: #f0f0f0; /* Couleur de fond pour les lignes paires */
+}
+
+#itemList th, #itemList td {
+    border: 1px solid #ccc; /* Bordure grise pour les cellules */
+    text-align: center; /* Centre le texte */
+    padding: 8px; /* Espacement intérieur des cellules */
+}
+
+/* Style pour le scanner */
+#scanner {
+    width: 100%; /* Prend toute la largeur de la page */
+    height: 400px; /* Hauteur fixe pour le scanner */
+    margin: 20px 0; /* Espacement en haut et en bas */
+    position: relative; /* Nécessaire pour le pseudo-élément */
+    overflow: hidden; /* Masque les débordements */
+}
+
+/* Ajustements pour la vidéo ou l'image dans le scanner */
+#scanner video,
+#scanner img {
+    width: 100%; /* Assure que la vidéo ou l'image occupe tout l'espace */
+    height: 100%; /* Maintient le ratio d'aspect */
+}
+
+/* Styles pour le cadre du scanner */
+.scanner-frame {
+    border: 2px solid #0056b3; /* Couleur de la bordure */
+    border-radius: 8px; /* Coins arrondis */
+    padding: 10px; /* Espacement intérieur */
+    margin: 20px auto; /* Centre le cadre dans le conteneur */
+}
+
+/* Ligne verte au centre du scanner */
+#scanner::after {
+    content: ""; /* Nécessaire pour créer le pseudo-élément */
+    position: absolute; /* Positionnement absolu */
+    top: 50%; /* Centre verticalement */
+    left: 0; /* Commence à gauche */
+    right: 0; /* Termine à droite */
+    height: 2px; /* Épaisseur de la ligne */
+    background-color: green; /* Couleur de la ligne */
+    transform: translateY(-50%); /* Ajuste la position pour centrer */
+}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventaire avec Codes-Barres</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <img src="https://groupebanco.com/wp-content/uploads/2020/10/logo_banco-300x71.png" alt="Logo Banco" class="logo">
+        <h1>Gestion d'inventaire</h1>
+    </header>
+
+    <main class="container">
+        <!-- Importer la liste d'items via un fichier CSV -->
+        <section>
+            <h2>Importer la liste d'items (CSV)</h2>
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <label for="csvFileInput">Choisissez un fichier CSV :</label>
+                <input type="file" name="file" id="csvFileInput" accept=".csv" required>
+                <br><br>
+                <button type="submit">Charger et traiter la liste</button>
+            </form>
+        </section>
+
+        <!-- Liste des items -->
+        <section>
+            <h2>Liste d'items</h2>
+            <div id="itemContainer">
+                <ul id="itemList"></ul>
+            </div>
+        </section>
+        
+        <!-- Entrée manuelle du code-barres -->
+        <section>
+            <h3>Entrer un code-barres manuellement :</h3>
+            <input type="text" id="manualCodeInput" placeholder="Entrez le code-barres">
+            <button onclick="manualCheck()">Valider le code-barres</button>
+        </section>
+
+        <!-- Scanner un item -->
+        <section>
+            <h2>Scanner les items</h2>
+            <div class="scanner-frame">
+                <div id="scanner">
+                    <video id="video" autoplay playsinline></video> <!-- Flux vidéo de la caméra -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Téléchargement des rapports -->
+        <section>
+            <h3>Télécharger les rapports :</h3>
+            <button onclick="downloadSummary('found')">Télécharger les items trouvés (PDF)</button>
+            <button onclick="downloadSummary('not_found')">Télécharger les items non trouvés (PDF)</button>
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="quagga.min.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Initialisation du flux vidéo
+        const video = document.getElementById('video');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                video.srcObject = stream; // Assigner le flux à l'élément video
+            })
+            .catch(function(error) {
+                console.error("Erreur d'accès à la caméra : ", error);
+            });
+
+        function downloadSummary(type) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            let title = type === 'found' ? 'Items trouvés' : 'Items non trouvés';
+            doc.text(title, 10, 10);
+
+            const items = type === 'found' ? foundItems : notFoundItems; 
+            const startY = 20; 
+
+            items.forEach((item, index) => {
+                const y = startY + (index * 10); 
+
+                if (type === 'found') {
+                    doc.setTextColor(0, 128, 0); 
+                } else {
+                    doc.setTextColor(255, 0, 0);
+                }
+
+                doc.text(item.name, 10, y); 
+            });
+
+            doc.save(`${title}.pdf`);
+        }
+    </script>
+</body>
+</html>
