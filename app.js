@@ -180,37 +180,11 @@ Quagga.onDetected(function(data) {
     }
 });
 
-// Créer le bouton SCAN
-function createScanButton() {
-    const scanButton = document.createElement('button');
-    scanButton.textContent = 'SCAN';
-    scanButton.style.backgroundColor = 'blue';
-    scanButton.style.color = 'white';
-    scanButton.style.border = 'none';
-    scanButton.style.padding = '10px 20px';
-    scanButton.style.cursor = 'pointer';
-    scanButton.style.marginTop = '10px';
+// Lier les événements au bouton SCAN
+document.getElementById('scanButton').addEventListener('mousedown', () => {
+    startScanner(); // Commencer à scanner quand le bouton est enfoncé
+});
 
-    scanButton.addEventListener('mousedown', () => {
-        startScanner(); // Commencer à scanner quand le bouton est enfoncé
-    });
-
-    scanButton.addEventListener('mouseup', () => {
-        stopScanner(); // Arrêter le scan quand le bouton est relâché
-    });
-
-    return scanButton;
-}
-
-// Lancer le choix de la caméra lors du chargement de la page
-function setup() {
-    const reportsSection = document.querySelector('section:nth-of-type(3)'); // On récupère la section des rapports
-
-    // Créer le bouton SCAN
-    const scanButton = createScanButton();
-
-    // Insérer le bouton juste au-dessus de la phrase "Télécharger les rapports"
-    reportsSection.appendChild(scanButton);
-}
-
-window.onload = setup;
+document.getElementById('scanButton').addEventListener('mouseup', () => {
+    stopScanner(); // Arrêter le scan quand le bouton est relâché
+});
