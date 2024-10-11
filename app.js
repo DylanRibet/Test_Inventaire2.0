@@ -6,7 +6,7 @@ let isScanning = false; // Indicateur pour savoir si le scan est en cours
 // Lire le fichier CSV
 function processCSV() {
     const fileInput = document.getElementById('csvFileInput');
-    
+
     // Vérifier si un fichier a été sélectionné
     if (!fileInput.files.length) {
         alert("Veuillez sélectionner un fichier CSV.");
@@ -142,7 +142,7 @@ document.getElementById('csvFileInput').addEventListener('change', processCSV);
 async function startScanner() {
     const constraints = {
         video: {
-            facingMode: 'environment' // Utiliser toujours la caméra arrière
+            facingMode: { exact: "environment" } // Utiliser uniquement la caméra arrière
         }
     };
 
@@ -205,8 +205,15 @@ function createScanButton() {
 // Lancer le choix de la caméra lors du chargement de la page
 function setup() {
     const reportsSection = document.getElementById('reportsSection');
+
+    // Créer le bouton SCAN
     const scanButton = createScanButton();
-    reportsSection.insertBefore(scanButton, reportsSection.firstChild); // Insérer le bouton juste au-dessus des rapports
+
+    // Insérer le bouton juste au-dessus de la phrase "Télécharger les rapports"
+    const downloadReportsText = document.createElement('div');
+    downloadReportsText.textContent = "Télécharger les rapports";
+    reportsSection.appendChild(scanButton);
+    reportsSection.appendChild(downloadReportsText);
 }
 
 window.onload = setup;
