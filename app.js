@@ -1,10 +1,9 @@
-// app.js
-
 let foundItems = []; // Tableau pour les items trouvés
 let notFoundItems = []; // Tableau pour les items non trouvés
 let itemsList = []; // Nouvelle variable pour garder trace de tous les items
 let currentStream; // Pour garder une référence du flux vidéo actuel
 let currentCamera = 'environment'; // Valeur par défaut pour la caméra arrière
+let scannerActive = false; // Variable pour suivre l'état du scanner
 
 // Lire le fichier CSV
 function processCSV() {
@@ -65,52 +64,6 @@ function displayItems(items) {
     });
 }
 
-// Fonction pour vérifier les items manuellement
-function manualCheck() {
-    const manualCode = document.getElementById('manualCodeInput').value.trim();
-    checkItem(manualCode);
-}
-
-// Obtenir les caméras disponibles
-async function getCameras() {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    const videoTracks = stream.getVideoTracks();
-    return videoTracks;
-}
-
-// Démarrer le scan des codes-barres
-async function startScanner() {
-    const constraints = {
-        video: {
-            facingMode: currentCamera // Utiliser la valeur actuelle de currentCamera
-        }
-    };
-
-    Quagga.init({
-        inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: document.querySelector('#scanner'),
-            constraints
-        },
-        decoder: {
-            readers: ["code_128_reader", "ean_reader"] // types de codes-barres supportés
-        }
-    }, function(err) {
-        if (err) {
-            console.error(err);
-            return;
-        }
-        Quagga.start();
-    });
-}
-
-// À la détection d'un code-barres
-Quagga.onDetected(function(data) {
-    const scannedCode = data.codeResult.code;
-    checkItem(scannedCode);
-});
-
 // Vérifie si le code scanné correspond à un item dans la liste
 function checkItem(scannedCode) {
     const items = document.querySelectorAll('#itemList tr');
@@ -137,7 +90,49 @@ function checkItem(scannedCode) {
     notFoundItems = itemsList.filter(item => !item.scanned);
 }
 
-// Téléchargement des rapports
+// Démarrer le scan des codes-barres
+async function startScanner() {
+    const constraints = {
+        video: {
+            facingMode: currentCamera // Utiliser la valeur actuelle de currentCamera
+        }
+    };
+
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector('#scanner'),
+            constraints
+        },
+        decoder: {
+            readers: ["code_128_reader", "ean_reader"] // types de codes-barres supportés
+        }
+    }, function(err) {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        Quagga.start();
+        scannerActive = true; // Mettre à jour l'état du scanner
+    });
+}
+
+// Fonction pour arrêter le scanner
+function stopScanner() {
+    Quagga.stop();
+    scannerActive = false; // Mettre à jour l'état du scanner
+}
+
+// À la détection d'un code-barres
+Quagga.onDetected(function(data) {
+    if (scannerActive) { // Vérifier si le scanner est actif
+        const scannedCode = data.codeResult.code;
+        checkItem(scannedCode);
+    }
+});
+
+// Fonction pour télécharger les rapports
 async function downloadSummary(status) {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('portrait', 'pt', 'letter'); // Format 8.5x11 pouces
@@ -189,26 +184,32 @@ document.getElementById('csvFileInput').addEventListener('change', processCSV);
 
 // Demander à l'utilisateur quelle caméra utiliser
 function chooseCamera() {
-    const startButton = document.createElement('button');
-    startButton.textContent = 'Démarrer le scan';
-    startButton.style.margin = '10px';
+    const scanButton = document.createElement('button');
+    scanButton.textContent = 'SCAN';
+    scanButton.style.margin = '10px';
 
     const switchButton = document.createElement('button');
     switchButton.textContent = 'Changer de caméra';
     switchButton.style.margin = '10px';
 
-    document.body.appendChild(startButton);
+    document.body.appendChild(scanButton);
     document.body.appendChild(switchButton);
 
-    startButton.addEventListener('click', () => {
-        startScanner();
-        switchButton.style.display = 'inline'; // Afficher le bouton de changement de caméra
+    scanButton.addEventListener('click', () => {
+        if (!scannerActive) {
+            startScanner(); // Démarrer le scanner
+            scanButton.textContent = 'ARRÊTER'; // Changer le texte du bouton
+        } else {
+            stopScanner(); // Arrêter le scanner
+            scanButton.textContent = 'SCAN'; // Remettre le texte original
+        }
     });
 
     switchButton.addEventListener('click', () => {
         // Changer la caméra
         currentCamera = currentCamera === 'environment' ? 'user' : 'environment'; // Alterner entre les caméras
         alert(`Caméra changée : ${currentCamera === 'environment' ? 'Arrière' : 'Avant'}`);
+        stopScanner(); // Arrêter le scanner avant de changer la caméra
         startScanner(); // Redémarrer le scanner
     });
 }
