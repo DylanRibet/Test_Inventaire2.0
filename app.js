@@ -4,6 +4,7 @@ let foundItems = []; // Tableau pour les items trouvés
 let notFoundItems = []; // Tableau pour les items non trouvés
 let itemsList = []; // Nouvelle variable pour garder trace de tous les items
 let currentStream; // Pour garder une référence du flux vidéo actuel
+let currentCamera = 'environment'; // Valeur par défaut pour la caméra arrière
 
 // Lire le fichier CSV
 function processCSV() {
@@ -78,12 +79,10 @@ async function getCameras() {
 }
 
 // Démarrer le scan des codes-barres
-async function startScanner(cameraLabel) {
-    const cameras = await getCameras();
-    const cameraIndex = cameraLabel === 'Front' ? 0 : 1; // 0 pour caméra avant, 1 pour caméra arrière
+async function startScanner() {
     const constraints = {
         video: {
-            facingMode: cameraIndex === 0 ? { exact: "user" } : { exact: "environment" }
+            facingMode: currentCamera // Utiliser la valeur actuelle de currentCamera
         }
     };
 
@@ -201,14 +200,26 @@ function chooseCamera() {
     startButton.textContent = 'Démarrer le scan';
     startButton.style.margin = '10px';
 
+    const switchButton = document.createElement('button');
+    switchButton.textContent = 'Changer de caméra';
+    switchButton.style.margin = '10px';
+
     document.body.appendChild(cameraSelector);
     document.body.appendChild(startButton);
+    document.body.appendChild(switchButton);
 
     startButton.addEventListener('click', () => {
-        const selectedCamera = cameraSelector.value;
-        startScanner(selectedCamera);
+        startScanner();
         document.body.removeChild(cameraSelector);
         document.body.removeChild(startButton);
+        switchButton.style.display = 'inline'; // Afficher le bouton de changement de caméra
+    });
+
+    switchButton.addEventListener('click', () => {
+        // Changer la caméra
+        currentCamera = currentCamera === 'environment' ? 'user' : 'environment'; // Alterner entre les caméras
+        alert(`Caméra changée : ${currentCamera === 'environment' ? 'Arrière' : 'Avant'}`);
+        startScanner(); // Redémarrer le scanner
     });
 }
 
